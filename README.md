@@ -60,4 +60,4 @@ This project is licensed under the Creative Commons Attribution-NonCommercial-No
 
 ## Contact
 
-For any inquiries, please reach out to [Email](mailto:sci.kirollousvictor2018@alexu.edu.eg) or via [LinkedIn](https://www.linkedin.com/in/kirollous-victor).
+For any inquiries, please reach out to [Email](mailto:sci.kirollousvictor2018@alexu.edu.eg) or via [LinkedIn](https://www.linkedin.com/in/kirollous-victor-1a13a61b8).
