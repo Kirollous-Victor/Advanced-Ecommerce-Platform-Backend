@@ -9,14 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
-* @mixin Builder
-*/
+ * @mixin Builder
+ */
 class Category extends Model
 {
     use HasFactory;
 
     protected $table = 'categories';
     protected $fillable = ['name', 'parent_id'];
+    protected $hidden = ['created_at', 'updated_at'];
 
     public function subCategories(): HasMany
     {
