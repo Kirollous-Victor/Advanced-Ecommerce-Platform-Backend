@@ -17,7 +17,6 @@ class Category extends Model
 
     protected $table = 'categories';
     protected $fillable = ['name', 'parent_id'];
-    protected $hidden = ['created_at', 'updated_at'];
 
     public function subCategories(): HasMany
     {
@@ -26,6 +25,6 @@ class Category extends Model
 
     public function parentCategory(): BelongsTo
     {
-        return $this->belongsTo(Category::class, 'id', 'parent_id');
+        return $this->belongsTo(Category::class, 'parent_id', 'id');
     }
 }
