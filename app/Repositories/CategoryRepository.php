@@ -4,45 +4,18 @@ namespace App\Repositories;
 
 use App\Interfaces\CategoryRepositoryInterface;
 use App\Models\Category;
-use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 
-class CategoryRepository implements CategoryRepositoryInterface
+class CategoryRepository extends BaseEloquentRepository implements CategoryRepositoryInterface
 {
-    public function all(): Collection
+
+    public function __construct(Category $category)
     {
-        return Category::with(['subCategories' => fn(Builder $query) => $query->with('subCategories')
-            ->orderBy('name')])->whereNull('parent_id')->orderBy('name')->get(['id', 'name']);
+        parent::__construct($category);
     }
 
-    public function getById($id): ?Category
+    public function updateParentCategory(int $subId, int $parentId): void
     {
-        return Category::with(['subCategories' => fn(Builder $query) => $query
-            ->with(['subCategories' => fn(Builder $query) => $query->orderBy('name')])
-            ->orderBy('name')])->find($id);
-    }
-
-    public function store(array $data): Category
-    {
-        return Category::create($data);
-    }
-
-    public function update(array $data, $id): bool|Category
-    {
-        $category = Category::find($id);
-        if ($category) {
-            $category->update($data);
-            return $category;
-        }
-        return false;
-    }
-
-    public function delete($id): bool
-    {
-        $category = Category::find($id);
-        if ($category) {
-            return $category->delete();
-        }
-        return false;
+        $subCategory = $this->find($subId);
+        $subCategory->update(['parent_id' => $parentId]);
     }
 }
