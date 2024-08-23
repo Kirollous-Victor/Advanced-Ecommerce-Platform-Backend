@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Interfaces\CategoryRepositoryInterface;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -12,20 +12,17 @@ use Illuminate\Support\Facades\Validator;
 class CategoryController extends Controller
 {
     protected CategoryRepositoryInterface $categoryRepository;
+    protected CategoryService $categoryService;
 
-    public function __construct(CategoryRepositoryInterface $categoryRepository)
+    public function __construct(CategoryRepositoryInterface $categoryRepository, CategoryService $categoryService)
     {
         $this->categoryRepository = $categoryRepository;
+        $this->categoryService = $categoryService;
     }
 
     public function index(): JsonResponse
     {
-        $categories = $this->categoryRepository->all(['id', 'name'], ['name' => 'asc'],
-            ['subCategories' => function (Builder $query) {
-                $query->with(['subCategories' => function (Builder $query) {
-                    $query->select(['id', 'name', 'parent_id']);
-                }])->select(['id', 'name', 'parent_id'])->orderBy('name');
-            }]);
+        $categories = $this->categoryService->getCategories($this->categoryRepository, 1);
         return response()->json(['data' => $categories]);
     }
 
@@ -44,6 +41,12 @@ class CategoryController extends Controller
 
     public function show(string $id): JsonResponse
     {
+        $validator = Validator::make(compact('id'), [
+            'id' => 'required|integer|exists:categories,id'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->messages()], 422);
+        }
         $category = $this->categoryRepository->find($id, ['id', 'name', 'parent_id'], ['subCategories']);
         if ($category) {
             return response()->json(['data' => $category]);
@@ -53,26 +56,51 @@ class CategoryController extends Controller
 
     public function update(Request $request, string $id): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all() + compact('id'), [
             'name' => 'sometimes|string|between:1,100',
-            'parent_id' => 'nullable|exists:categories,id'
+            'parent_id' => 'nullable|exists:categories,id',
+            'id' => 'required|integer|exists:categories,id'
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
         $category = $this->categoryRepository->update($id, $validator->valid());
         if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
+            return response()->json(['message' => 'Category has been not updated'], 404);
         }
         return response()->json(['message' => 'Category has been updated', 'data' => $category]);
     }
 
     public function destroy(string $id): JsonResponse
     {
-        $category = $this->categoryRepository->destroy($id);
-        if (!$category) {
-            return response()->json(['message' => 'Category not found'], 404);
+        $validator = Validator::make(compact('id'), [
+            'id' => 'required|integer|exists:categories,id'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->messages()], 422);
+        }
+        $deleted = $this->categoryRepository->destroy($id);
+        if (!$deleted) {
+            return response()->json(['message' => 'Category has been not deleted'], 404);
         }
         return response()->json(['message' => 'Category has been deleted']);
+    }
+
+    public function moveSubcategories(Request $request, int $parent_id): JsonResponse
+    {
+        $validator = Validator::make($request->all() + compact('parent_id'), [
+            'parent_id' => 'required|integer|exists:categories,id',
+            'subcategory_ids' => 'required|array',
+            'subcategory_ids.*' => 'integer|distinct|not_in:' . $parent_id . '|exists:categories,id',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->messages()], 422);
+        }
+        try {
+            $this->categoryRepository->updateParentCategory($request->subcategory_ids, $parent_id);
+            return response()->json(['message' => 'Subcategories moved successfully.']);
+        } catch (\Exception $exception) {
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
     }
 }
