@@ -8,3 +8,4 @@ use Illuminate\Support\Facades\Route;
 //})->middleware('auth:sanctum');
 
 Route::apiResource('categories', CategoryController::class);
+Route::patch('/categories/{category}/move-subcategories', [CategoryController::class, 'moveSubcategories']);
