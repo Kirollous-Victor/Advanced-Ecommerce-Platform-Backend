@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Interfaces\CategoryRepositoryInterface;
 use App\Models\Category;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
 {
-    protected $categoryRepository;
+    protected CategoryRepositoryInterface $categoryRepository;
 
     public function __construct(CategoryRepositoryInterface $categoryRepository)
     {
@@ -19,7 +21,12 @@ class CategoryController extends Controller
 
     public function index(): JsonResponse
     {
-        $categories = $this->categoryRepository->all();
+        $categories = $this->categoryRepository->all(['id', 'name'], ['name' => 'asc'],
+            ['subCategories' => function (Builder $query) {
+                $query->with(['subCategories' => function (Builder $query) {
+                    $query->select(['id', 'name', 'parent_id']);
+                }])->select(['id', 'name', 'parent_id'])->orderBy('name');
+            }]);
         return response()->json(['data' => $categories]);
     }
 
@@ -38,7 +45,7 @@ class CategoryController extends Controller
 
     public function show(string $id): JsonResponse
     {
-        $category = $this->categoryRepository->getById($id);
+        $category = $this->categoryRepository->find($id, ['id', 'name', 'parent_id'], ['subCategories']);
         if ($category) {
             return response()->json(['data' => $category]);
         }
@@ -54,7 +61,7 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $category = $this->categoryRepository->update($validator->valid(), $id);
+        $category = $this->categoryRepository->update($id, $validator->valid());
         if (!$category) {
             return response()->json(['message' => 'Category not found'], 404);
         }
@@ -63,7 +70,7 @@ class CategoryController extends Controller
 
     public function destroy(string $id): JsonResponse
     {
-        $category = $this->categoryRepository->delete($id);
+        $category = $this->categoryRepository->destroy($id);
         if (!$category) {
             return response()->json(['message' => 'Category not found'], 404);
         }
