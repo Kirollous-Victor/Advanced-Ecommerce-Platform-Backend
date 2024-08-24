@@ -27,4 +27,14 @@ class Category extends Model
     {
         return $this->belongsTo(Category::class, 'parent_id', 'id');
     }
+
+    public function isSubCategory(): bool
+    {
+        return (bool)$this->parent_id;
+    }
+
+    public function isParentCategory(): bool
+    {
+        return (bool)$this->subCategories()->get()->first();
+    }
 }
