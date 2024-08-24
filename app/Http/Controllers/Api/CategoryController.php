@@ -47,7 +47,7 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $category = $this->categoryRepository->find($id, ['id', 'name', 'parent_id'], ['subCategories']);
+        $category = $this->categoryService->getCategory($id);
         return response()->json(['data' => $category]);
     }
 
