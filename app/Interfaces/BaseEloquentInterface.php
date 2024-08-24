@@ -11,21 +11,22 @@ interface BaseEloquentInterface
     public function all(array $columns = ['*'], array $orderBy = [], array $relations = []): Collection;
 
     public function paginate(array $columns = ['*'], array $orderBy = [], array $relations = [], int $paginate = 50,
-                             array $parameters = []): LengthAwarePaginator;
+                             array $andParameters = [], array $orParameters = []): LengthAwarePaginator;
 
-    public function getBy(array $parameters, array $columns = ['*'], array $orderBy = [],
+    public function getBy(array $andParameters, array $orParameters = [], array $columns = ['*'], array $orderBy = [],
                           array $relations = []): Collection;
 
     public function pluck(string $fieldName, string $fieldId = 'id'): mixed;
 
-    public function pluckBy(array $parameters, string $listFieldName, string $listFieldId = 'id'): mixed;
+    public function pluckBy(string $listFieldName, string $listFieldId = 'id', array $andParameters = [],
+                            array  $orParameters = []): mixed;
 
     public function find(int $id, array $columns = ['*'], array $relations = []): ?Model;
 
     public function findBy(string $field, string $value, array $columns = ['*'], array $orderBy = [],
                            array  $relations = []): ?Model;
 
-    public function findByMany(array $parameters, array $columns = ['*'], array $orderBy = [],
+    public function findByMany(array $andParameters, array $orParameters = [], array $columns = ['*'], array $orderBy = [],
                                array $relations = []): ?Model;
 
     public function getWhereIn(string $fieldName, array $values, array $columns = ['*'], array $orderBy = [],
@@ -37,5 +38,5 @@ interface BaseEloquentInterface
 
     public function destroy($id): bool;
 
-    public function count(array $parameters = []): int;
+    public function count(array $andParameters = [], array $orParameters = []): int;
 }

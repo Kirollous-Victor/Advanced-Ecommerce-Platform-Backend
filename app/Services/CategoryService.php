@@ -20,7 +20,7 @@ class CategoryService
         switch ($mode) {
             case 1:
             {
-                return $this->categoryRepository->getBy(['parent_id' => null], ['id', 'name'], ['name' => 'asc'],
+                return $this->categoryRepository->getBy(['parent_id' => null], [], ['id', 'name'], ['name' => 'asc'],
                     ['subCategories' => function (Builder $query) {
                         $query->with(['subCategories' => function (Builder $query) {
                             $query->select(['id', 'name', 'parent_id']);

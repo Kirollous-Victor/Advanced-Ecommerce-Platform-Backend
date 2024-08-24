@@ -26,22 +26,19 @@ class BaseEloquentRepository implements BaseEloquentInterface
     }
 
     public function paginate(array $columns = ['*'], array $orderBy = [], array $relations = [], int $paginate = 50,
-                             array $parameters = []): LengthAwarePaginator
+                             array $andParameters = [], array $orParameters = []): LengthAwarePaginator
     {
-        $query = $this->model::with($relations)->select($columns);
+        $query = $this->model::with($relations)->select($columns)->where($andParameters)->orWhere($orParameters);
         foreach ($orderBy as $column => $direction) {
             $query->orderBy($column, $direction);
-        }
-        foreach ($parameters as $column => $value) {
-            $query->where($column, $value);
         }
         return $query->paginate($paginate);
     }
 
-    public function getBy(array $parameters, array $columns = ['*'], array $orderBy = [],
+    public function getBy(array $andParameters, array $orParameters = [], array $columns = ['*'], array $orderBy = [],
                           array $relations = []): Collection
     {
-        $query = $this->model::with($relations)->select($columns)->where($parameters);
+        $query = $this->model::with($relations)->select($columns)->where($andParameters)->orWhere($orParameters);
         foreach ($orderBy as $column => $direction) {
             $query->orderBy($column, $direction);
         }
@@ -53,9 +50,11 @@ class BaseEloquentRepository implements BaseEloquentInterface
         return $this->model::orderBy($fieldName)->pluck($fieldName, $fieldId);
     }
 
-    public function pluckBy(array $parameters, string $listFieldName, string $listFieldId = 'id'): mixed
+    public function pluckBy(string $listFieldName, string $listFieldId = 'id', array $andParameters = [],
+                            array  $orParameters = []): mixed
     {
-        return $this->model::where($parameters)->orderBy($listFieldName)->pluck($listFieldName, $listFieldId);
+        return $this->model::where($andParameters)->orWhere($orParameters)->orderBy($listFieldName)
+            ->pluck($listFieldName, $listFieldId);
     }
 
     public function find(int $id, array $columns = ['*'], array $relations = []): ?Model
@@ -73,10 +72,10 @@ class BaseEloquentRepository implements BaseEloquentInterface
         return $query->first();
     }
 
-    public function findByMany(array $parameters, array $columns = ['*'], array $orderBy = [],
+    public function findByMany(array $andParameters, array $orParameters = [], array $columns = ['*'], array $orderBy = [],
                                array $relations = []): ?Model
     {
-        $query = $this->model::with($relations)->select($columns)->where($parameters);
+        $query = $this->model::with($relations)->select($columns)->where($andParameters)->orWhere($orParameters);
         foreach ($orderBy as $column => $direction) {
             $query->orderBy($column, $direction);
         }
@@ -117,8 +116,8 @@ class BaseEloquentRepository implements BaseEloquentInterface
         return false;
     }
 
-    public function count(array $parameters = []): int
+    public function count(array $andParameters = [], array $orParameters = []): int
     {
-        return $this->model::where($parameters)->count();
+        return $this->model::where($andParameters)->orWhere($orParameters)->count();
     }
 }
