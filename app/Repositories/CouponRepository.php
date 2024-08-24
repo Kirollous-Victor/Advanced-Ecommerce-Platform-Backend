@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Collection;
 
 class CouponRepository extends BaseEloquentRepository implements CouponRepositoryInterface
 {
-    public function __construct(Coupon $category)
+    public function __construct(Coupon $coupon)
     {
-        parent::__construct($category);
+        parent::__construct($coupon);
     }
 
     public function getAllUnexpired(array $columns = ['*'], array $orderBy = [], array $relations = []): Collection
