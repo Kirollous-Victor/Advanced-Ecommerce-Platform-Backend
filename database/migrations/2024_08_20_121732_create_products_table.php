@@ -17,7 +17,7 @@ return new class extends Migration {
                 ->onDelete('set null');
             $table->string('name', 100);
             $table->text('description');
-            $table->double('price');
+            $table->decimal('price', 10, 2);
             $table->unsignedInteger('stock');
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->nullable();

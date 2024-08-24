@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('order_id')->unique()->constrained('orders')->onDelete('restrict');
             $table->string('payment_method', 20);
-            $table->double('amount');
+            $table->decimal('amount', 10, 2);
             $table->enum('status', ['cash', 'credit_card', 'paypal'])->default('cash');
             $table->timestamp('created_at')->useCurrent();
         });
