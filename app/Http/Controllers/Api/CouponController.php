@@ -19,7 +19,8 @@ class CouponController extends Controller
 
     public function index()
     {
-        $coupons = $this->couponRepository->all();
+        $coupons = $this->couponRepository->all(['code', 'discount_type', 'discount_value', 'expiry_date'],
+            ['expiry_date' => 'asc']);
         return response()->json(['data' => $coupons]);
     }
 
