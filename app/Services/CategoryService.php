@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\CategoryRepository;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 class CategoryService
 {
@@ -36,6 +37,36 @@ class CategoryService
                     }]);
             default:
                 return $this->categoryRepository->all();
+        }
+
+    }
+
+    public function getCategory(int $id, int $mode = null): ?Model
+    {
+        switch ($mode) {
+            case 1:
+            {
+                return $this->categoryRepository->find($id, ['id', 'name', 'parent_id'],
+                    ['products' => function (Builder $query) {
+                        $query->orderBy('name')->limit(5);
+                    }]);
+            }
+            case 2:
+            {
+                return $this->categoryRepository->find($id, ['id', 'name', 'parent_id'],
+                    ['products' => function (Builder $query) {
+                        $query->orderBy('name');
+                    }]);
+            }
+            default:
+            {
+                return $this->categoryRepository->find($id, ['id', 'name', 'parent_id'],
+                    ['subCategories' => function (Builder $query) {
+                        $query->with(['subCategories' => function (Builder $query) {
+                            $query->select(['id', 'name', 'parent_id']);
+                        }])->select(['id', 'name', 'parent_id'])->orderBy('name');
+                    }]);
+            }
         }
 
     }
