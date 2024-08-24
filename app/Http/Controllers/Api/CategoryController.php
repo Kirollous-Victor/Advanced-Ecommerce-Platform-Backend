@@ -39,7 +39,7 @@ class CategoryController extends Controller
         return response()->json(['data' => $category, 'message' => 'Category has been created'], 201);
     }
 
-    public function show(string $id): JsonResponse
+    public function show(int $id): JsonResponse
     {
         $validator = Validator::make(compact('id'), [
             'id' => 'required|integer|exists:categories,id'
@@ -48,13 +48,10 @@ class CategoryController extends Controller
             return response()->json(['errors' => $validator->messages()], 422);
         }
         $category = $this->categoryRepository->find($id, ['id', 'name', 'parent_id'], ['subCategories']);
-        if ($category) {
-            return response()->json(['data' => $category]);
-        }
-        return response()->json(['message' => 'Category not found'], 404);
+        return response()->json(['data' => $category]);
     }
 
-    public function update(Request $request, string $id): JsonResponse
+    public function update(Request $request, int $id): JsonResponse
     {
         $validator = Validator::make($request->all() + compact('id'), [
             'name' => 'sometimes|string|between:1,100',
@@ -65,13 +62,10 @@ class CategoryController extends Controller
             return response()->json(['errors' => $validator->messages()], 422);
         }
         $category = $this->categoryRepository->update($id, $validator->valid());
-        if (!$category) {
-            return response()->json(['message' => 'Category has been not updated'], 404);
-        }
         return response()->json(['message' => 'Category has been updated', 'data' => $category]);
     }
 
-    public function destroy(string $id): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
         $validator = Validator::make(compact('id'), [
             'id' => 'required|integer|exists:categories,id'
@@ -80,9 +74,6 @@ class CategoryController extends Controller
             return response()->json(['errors' => $validator->messages()], 422);
         }
         $deleted = $this->categoryRepository->destroy($id);
-        if (!$deleted) {
-            return response()->json(['message' => 'Category has been not deleted'], 404);
-        }
         return response()->json(['message' => 'Category has been deleted']);
     }
 
