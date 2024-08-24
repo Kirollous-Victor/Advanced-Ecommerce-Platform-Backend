@@ -8,12 +8,19 @@ use Illuminate\Database\Eloquent\Collection;
 
 class CategoryService
 {
-    public function getCategories(CategoryRepository $categoryRepository, int $mode = null): Collection
+    private CategoryRepository $categoryRepository;
+
+    public function __construct(CategoryRepository $categoryRepository)
+    {
+        $this->categoryRepository = $categoryRepository;
+    }
+
+    public function getCategories(int $mode = null): Collection
     {
         switch ($mode) {
             case 1:
             {
-                return $categoryRepository->getBy(['parent_id' => null], ['id', 'name'], ['name' => 'asc'],
+                return $this->categoryRepository->getBy(['parent_id' => null], ['id', 'name'], ['name' => 'asc'],
                     ['subCategories' => function (Builder $query) {
                         $query->with(['subCategories' => function (Builder $query) {
                             $query->select(['id', 'name', 'parent_id']);
@@ -21,14 +28,14 @@ class CategoryService
                     }]);
             }
             case 2:
-                return $categoryRepository->all(['id', 'name'], ['name' => 'asc'],
+                return $this->categoryRepository->all(['id', 'name'], ['name' => 'asc'],
                     ['subCategories' => function (Builder $query) {
                         $query->with(['subCategories' => function (Builder $query) {
                             $query->select(['id', 'name', 'parent_id']);
                         }])->select(['id', 'name', 'parent_id'])->orderBy('name');
                     }]);
             default:
-                return $categoryRepository->all();
+                return $this->categoryRepository->all();
         }
 
     }
