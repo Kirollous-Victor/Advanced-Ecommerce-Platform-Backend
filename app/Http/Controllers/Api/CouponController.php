@@ -77,7 +77,7 @@ class CouponController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $deleted = $this->couponRepository->destroy($id);
+        $this->couponRepository->destroy($id);
         return response()->json(['message' => 'Coupon has been deleted']);
     }
 }
