@@ -66,7 +66,7 @@ class CouponController extends Controller
             return response()->json(['errors' => $validator->messages()], 422);
         }
         $coupon = $this->couponRepository->update($id, $request->all());
-        return response()->json(['data' => $coupon, 'message' => 'Coupon has been updated']);
+        return response()->json(['message' => 'Coupon has been updated', 'data' => $coupon]);
     }
 
     public function destroy(int $id)
