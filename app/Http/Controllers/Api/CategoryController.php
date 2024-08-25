@@ -54,9 +54,9 @@ class CategoryController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $validator = Validator::make($request->all() + compact('id'), [
+            'id' => 'required|integer|exists:categories,id',
             'name' => 'sometimes|string|between:1,100',
-            'parent_id' => 'nullable|exists:categories,id',
-            'id' => 'required|integer|exists:categories,id'
+            'parent_id' => 'nullable|integer|not_in:'.$id.'|exists:categories,id'
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
