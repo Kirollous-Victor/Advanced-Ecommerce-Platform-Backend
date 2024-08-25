@@ -37,7 +37,7 @@ class CouponController extends Controller
             return response()->json(['errors' => $validator->messages()], 422);
         }
         $coupon = $this->couponRepository->store($validator->valid());
-        return response()->json(['data' => $coupon, 'message' => 'Coupon has been created'], 201);
+        return response()->json(['message' => 'Coupon has been created', 'data' => $coupon], 201);
     }
 
     public function show(int $id)
@@ -65,7 +65,7 @@ class CouponController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $coupon = $this->couponRepository->update($id, $request->all());
+        $coupon = $this->couponRepository->update($id, $validator->valid());
         return response()->json(['message' => 'Coupon has been updated', 'data' => $coupon]);
     }
 
