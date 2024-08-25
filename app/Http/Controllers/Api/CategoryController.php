@@ -73,7 +73,7 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $deleted = $this->categoryRepository->destroy($id);
+        $this->categoryRepository->destroy($id);
         return response()->json(['message' => 'Category has been deleted']);
     }
 
