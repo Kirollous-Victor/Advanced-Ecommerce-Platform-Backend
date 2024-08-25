@@ -2,18 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Builder;
+use App\Traits\Castable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/**
- * @mixin Builder
- */
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, Castable;
 
     protected $table = 'categories';
     protected $fillable = ['name', 'parent_id'];
@@ -32,6 +29,7 @@ class Category extends Model
     {
         return $this->hasMany(Product::class, 'category_id', 'id');
     }
+
     public function isSubCategory(): bool
     {
         return (bool)$this->parent_id;
