@@ -56,13 +56,17 @@ class CategoryController extends Controller
         $validator = Validator::make($request->all() + compact('id'), [
             'id' => 'required|integer|exists:categories,id',
             'name' => 'sometimes|string|between:1,100',
-            'parent_id' => 'nullable|integer|not_in:'.$id.'|exists:categories,id'
+            'parent_id' => 'nullable|integer|not_in:' . $id . '|exists:categories,id'
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
         $category = $this->categoryRepository->update($id, $validator->valid());
-        return response()->json(['message' => 'Category has been updated', 'data' => $category]);
+        if ($category) {
+            return response()->json(['message' => 'Category has been updated', 'data' => $category]);
+        }
+        return response()->json(['message' => 'Category has not been updated'], 409);
+
     }
 
     public function destroy(int $id): JsonResponse
@@ -73,8 +77,10 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $this->categoryRepository->destroy($id);
-        return response()->json(['message' => 'Category has been deleted']);
+        if ($this->categoryRepository->destroy($id)) {
+            return response()->json(['message' => 'Category has been deleted']);
+        }
+        return response()->json(['message' => 'Category has not been deleted'], 409);
     }
 
     public function moveSubcategories(Request $request, int $parent_id): JsonResponse
@@ -87,11 +93,9 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        try {
-            $this->categoryRepository->updateParentCategory($request->subcategory_ids, $parent_id);
+        if ($this->categoryRepository->updateParentCategory($request->subcategory_ids, $parent_id)) {
             return response()->json(['message' => 'Subcategories moved successfully.']);
-        } catch (\Exception $exception) {
-            return response()->json(['error' => $exception->getMessage()], 500);
         }
+        return response()->json(['message' => 'Subcategories not updated.'], 409);
     }
 }
