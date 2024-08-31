@@ -98,4 +98,19 @@ class CategoryController extends Controller
         }
         return response()->json(['message' => 'Subcategories not updated.'], 409);
     }
+
+    public function removeSubcategoriesParent(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'subcategory_ids' => 'required|array',
+            'subcategory_ids.*' => 'integer|distinct|exists:categories,id',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->messages()], 422);
+        }
+        if ($this->categoryRepository->updateParentCategory($request->subcategory_ids)) {
+            return response()->json(['message' => 'Subcategories moved successfully.']);
+        }
+        return response()->json(['message' => 'Subcategories not updated.'], 409);
+    }
 }

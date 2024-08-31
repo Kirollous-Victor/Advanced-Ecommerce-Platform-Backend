@@ -13,7 +13,7 @@ class CategoryRepository extends BaseEloquentRepository implements CategoryRepos
         parent::__construct($category);
     }
 
-    public function updateParentCategory(array $subIds, int $parentId): bool
+    public function updateParentCategory(array $subIds, int $parentId = null): bool
     {
         return Category::whereIn('id', $subIds)->update(['parent_id' => $parentId]);
     }

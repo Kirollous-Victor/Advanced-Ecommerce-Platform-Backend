@@ -4,5 +4,5 @@ namespace App\Interfaces;
 
 interface CategoryRepositoryInterface extends BaseEloquentInterface
 {
-    public function updateParentCategory(array $subIds, int $parentId): bool;
+    public function updateParentCategory(array $subIds, int $parentId = null): bool;
 }

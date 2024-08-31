@@ -9,7 +9,11 @@ use App\Http\Controllers\Api\VendorController;
 use Illuminate\Support\Facades\Route;
 
 Route::apiResource('categories', CategoryController::class);
-Route::patch('/categories/{category}/move-subcategories', [CategoryController::class, 'moveSubcategories']);
+Route::group(['prefix' => 'categories'], function () {
+    Route::patch('/{category}/move-subcategories', [CategoryController::class, 'moveSubcategories']);
+    Route::patch('/subcategories/remove-parent', [CategoryController::class, 'removeSubcategoriesParent']);
+});
+
 
 Route::apiResource('coupons', CouponController::class);
 Route::apiResource('products', ProductController::class);
