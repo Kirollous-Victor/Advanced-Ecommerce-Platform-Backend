@@ -14,7 +14,6 @@ Route::group(['prefix' => 'categories'], function () {
     Route::patch('/subcategories/remove-parent', [CategoryController::class, 'removeSubcategoriesParent']);
 });
 
-
 Route::apiResource('coupons', CouponController::class);
 Route::apiResource('products', ProductController::class);
 Route::apiResource('users', UserController::class);
