@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 trait Castable
 {
-    public static function fromModel(Model $model)
+    public static function fromModel(Model $model): mixed
     {
         $instance = new self();
         $instance->setRawAttributes($model->getAttributes(), true);
