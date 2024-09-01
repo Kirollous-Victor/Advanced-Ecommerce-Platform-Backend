@@ -109,8 +109,8 @@ class CategoryController extends Controller
             return response()->json(['errors' => $validator->messages()], 422);
         }
         if ($this->categoryRepository->updateParentCategory($request->subcategory_ids)) {
-            return response()->json(['message' => 'Subcategories moved successfully.']);
+            return response()->json(['message' => 'Subcategories have been updated.']);
         }
-        return response()->json(['message' => 'Subcategories not updated.'], 409);
+        return response()->json(['message' => 'Subcategories have been not updated.'], 409);
     }
 }
