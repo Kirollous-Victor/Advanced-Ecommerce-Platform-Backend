@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 
@@ -10,8 +11,7 @@ class ProductTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
-    public function a_product_can_be_created(): void
+    #[Test] public function a_product_can_be_created(): void
     {
         $response = $this->post('api/products', [
             'name' => 'New Product',
