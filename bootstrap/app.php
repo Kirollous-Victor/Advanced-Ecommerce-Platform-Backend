@@ -22,4 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json(['error' => $exception->getMessage()], $exception->getStatusCode());
             }
         });
+        $exceptions->renderable(function (Throwable $throwable, Request $request) {
+            if (app()->environment('production')) {
+                return response()->json(['error' => 'Whoops, looks like something went wrong'], 500);
+            }
+        });
     })->create();
