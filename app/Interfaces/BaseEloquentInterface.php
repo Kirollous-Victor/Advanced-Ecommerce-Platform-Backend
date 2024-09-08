@@ -16,10 +16,10 @@ interface BaseEloquentInterface
     public function getBy(array $andParameters, array $orParameters = [], array $columns = ['*'], array $orderBy = [],
                           array $relations = []): Collection;
 
-    public function pluck(string $fieldName, string $fieldId = 'id'): mixed;
+    public function pluck(string $fieldName, string $fieldId = 'id'): Collection;
 
     public function pluckBy(string $listFieldName, string $listFieldId = 'id', array $andParameters = [],
-                            array  $orParameters = []): mixed;
+                            array  $orParameters = []): Collection;
 
     public function find(int $id, array $columns = ['*'], array $relations = []): ?Model;
 
