@@ -45,13 +45,13 @@ class BaseEloquentRepository implements BaseEloquentInterface
         return $query->get();
     }
 
-    public function pluck(string $fieldName, string $fieldId = 'id'): mixed
+    public function pluck(string $fieldName, string $fieldId = 'id'): Collection
     {
         return $this->model::orderBy($fieldName)->pluck($fieldName, $fieldId);
     }
 
     public function pluckBy(string $listFieldName, string $listFieldId = 'id', array $andParameters = [],
-                            array  $orParameters = []): mixed
+                            array  $orParameters = []): Collection
     {
         return $this->model::where($andParameters)->orWhere($orParameters)->orderBy($listFieldName)
             ->pluck($listFieldName, $listFieldId);
