@@ -109,11 +109,7 @@ class BaseEloquentRepository implements BaseEloquentInterface
 
     public function destroy($id): bool
     {
-        $query = $this->find($id);
-        if ($query) {
-            return $query->delete();
-        }
-        return false;
+        return $this->model::where('id', $id)->delete();
     }
 
     public function count(array $andParameters = [], array $orParameters = []): int
