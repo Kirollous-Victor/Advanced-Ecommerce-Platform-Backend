@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Interfaces\ProductRepositoryInterface;
 use App\Models\Product;
 
-class ProductRepository extends BaseEloquentRepository implements ProductRepositoryInterface
+class ProductRepository extends SoftDeletingRepository implements ProductRepositoryInterface
 {
 
     public function __construct(Product $product)
@@ -16,7 +16,16 @@ class ProductRepository extends BaseEloquentRepository implements ProductReposit
     public function find(int $id, array $columns = ['*'], array $relations = []): ?Product
     {
         $product = parent::find($id, $columns, $relations);
-        if ($product){
+        if ($product) {
+            return Product::fromModel($product);
+        }
+        return null;
+    }
+
+    public function findTrash(int $id, array $columns = ['*'], array $relations = []): ?Product
+    {
+        $product = parent::findTrash($id, $columns, $relations);
+        if ($product) {
             return Product::fromModel($product);
         }
         return null;

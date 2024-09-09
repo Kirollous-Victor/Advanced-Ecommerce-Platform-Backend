@@ -23,7 +23,7 @@ class ProductController extends Controller
 
     public function index(): JsonResponse
     {
-        $products = $this->productRepository->all();
+        $products = $this->productService->all();
         return response()->json(['data' => $products]);
     }
 
@@ -70,8 +70,11 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $product = $this->productRepository->update($id, $validator->validated());
-        return response()->json(['message' => 'Product has been updated', 'data' => $product]);
+        $product = $this->productRepository->updateTrash($id, $validator->validated());
+        if ($product) {
+            return response()->json(['message' => 'Product has been updated', 'data' => $product]);
+        }
+        return response()->json(['message' => 'Product has not been updated']);
     }
 
     public function destroy(int $id): JsonResponse
@@ -82,7 +85,9 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $this->productRepository->destroy($id);
-        return response()->json(['message' => 'Product has been deleted']);
+        if ($this->productRepository->destroy($id)) {
+            return response()->json(['message' => 'Product has been deleted']);
+        }
+        return response()->json(['message' => 'Product has not been deleted']);
     }
 }

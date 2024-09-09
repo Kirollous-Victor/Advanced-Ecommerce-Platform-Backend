@@ -2,7 +2,9 @@
 
 namespace App\Interfaces;
 
-interface ProductRepositoryInterface extends BaseEloquentInterface
+use App\Models\Product;
+
+interface ProductRepositoryInterface extends SoftDeletingRepositoryInterface
 {
     //
 }
