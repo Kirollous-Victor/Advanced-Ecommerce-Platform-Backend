@@ -87,7 +87,7 @@ class CategoryController extends Controller
     {
         $validator = Validator::make($request->all() + compact('parent_id'), [
             'parent_id' => 'required|integer|exists:categories,id',
-            'subcategory_ids' => 'required|array',
+            'subcategory_ids' => 'required|array|between:2,50',
             'subcategory_ids.*' => 'integer|distinct|not_in:' . $parent_id . '|exists:categories,id',
         ]);
         if ($validator->stopOnFirstFailure()->fails()) {
@@ -102,7 +102,7 @@ class CategoryController extends Controller
     public function removeSubcategoriesParent(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'subcategory_ids' => 'required|array',
+            'subcategory_ids' => 'required|array|between:2,50',
             'subcategory_ids.*' => 'integer|distinct|exists:categories,id',
         ]);
         if ($validator->stopOnFirstFailure()->fails()) {
