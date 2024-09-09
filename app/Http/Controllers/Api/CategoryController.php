@@ -90,7 +90,7 @@ class CategoryController extends Controller
             'subcategory_ids' => 'required|array',
             'subcategory_ids.*' => 'integer|distinct|not_in:' . $parent_id . '|exists:categories,id',
         ]);
-        if ($validator->fails()) {
+        if ($validator->stopOnFirstFailure()->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
         if ($this->categoryRepository->updateParentCategory($request->subcategory_ids, $parent_id)) {
@@ -105,7 +105,7 @@ class CategoryController extends Controller
             'subcategory_ids' => 'required|array',
             'subcategory_ids.*' => 'integer|distinct|exists:categories,id',
         ]);
-        if ($validator->fails()) {
+        if ($validator->stopOnFirstFailure()->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
         if ($this->categoryRepository->updateParentCategory($request->subcategory_ids)) {
