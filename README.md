@@ -4,6 +4,7 @@
 
 This project is the backend component of an advanced e-commerce platform. It is built using PHP and the Laravel framework, providing a robust foundation for an online marketplace that supports multiple vendors, user authentication, product management, order processing, payment integration, and more. The backend is designed to be scalable, secure, and maintainable, leveraging Laravel’s powerful features to deliver a high-performance application.
 
+**⚠️ Note: This project is currently under construction.**
 ## Features
 
 - **User Authentication:** Secure user authentication with role-based access control (Admin, Vendor, Customer).
@@ -23,7 +24,6 @@ This project is the backend component of an advanced e-commerce platform. It is 
 - **PHP 8.x:** The core programming language used for building the application.
 - **Laravel 11.x:** The web application framework that provides the structure and tools needed to build this project, including:
     - **Eloquent ORM:** For interacting with the database using an object-oriented approach.
-    - **Blade Templating:** (If needed for any admin dashboard or simple view rendering).
     - **Artisan Console:** For running commands and automating tasks.
     - **Migrations:** For managing database schema changes.
     - **Queues and Jobs:** For handling background tasks like email notifications and order processing.
@@ -37,19 +37,14 @@ This project is the backend component of an advanced e-commerce platform. It is 
 
 ### Security
 
-- **Laravel Sanctum:** For API authentication, allowing token-based authentication for SPAs and mobile applications.
+- **Laravel Sanctum/Passport:** For API authentication, allowing token-based authentication for SPAs and mobile applications and for OAuth2.
 - **Laravel Validation:** To ensure data integrity and security by validating user input.
-- **CSRF Protection:** Cross-Site Request Forgery protection for all forms and requests.
 
 ### Additional Tools
 
 - **Composer:** Dependency management for PHP, ensuring all required libraries and packages are up-to-date.
 - **Git:** Version control to manage code changes and collaboration.
 - **Docker (Optional):** For containerizing the application, ensuring consistent environments across development and production.
-
-## Contributing
-
-Contributions are welcome! Please fork this repository and submit a pull request for review.
 
 ## License
 
