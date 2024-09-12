@@ -40,7 +40,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $category = $this->productRepository->store($validator->valid());
+        $category = $this->productRepository->store($validator->validated());
         return response()->json(['data' => $category, 'message' => 'Product has been created'], 201);
     }
 
