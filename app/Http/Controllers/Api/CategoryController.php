@@ -35,7 +35,7 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $category = $this->categoryRepository->store($validator->valid());
+        $category = $this->categoryRepository->store($validator->validated());
         return response()->json(['data' => $category, 'message' => 'Category has been created'], 201);
     }
 
@@ -61,7 +61,7 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $category = $this->categoryRepository->update($id, $validator->valid());
+        $category = $this->categoryRepository->update($id, $validator->validated());
         if ($category) {
             return response()->json(['message' => 'Category has been updated', 'data' => $category]);
         }
