@@ -2,15 +2,15 @@
 
 namespace App\Services;
 
+use App\Interfaces\ProductRepositoryInterface;
 use App\Models\Product;
-use App\Repositories\ProductRepository;
 use Illuminate\Database\Eloquent\Collection;
 
 class ProductService
 {
-    private ProductRepository $productRepository;
+    private ProductRepositoryInterface $productRepository;
 
-    public function __construct(ProductRepository $productRepository)
+    public function __construct(ProductRepositoryInterface $productRepository)
     {
         $this->productRepository = $productRepository;
     }
@@ -46,5 +46,24 @@ class ProductService
             default:
                 return $this->productRepository->withTrashed();
         }
+    }
+
+    public function store(array $productData): Product
+    {
+        return Product::fromModel($this->productRepository->store($productData));
+    }
+
+    public function update(int $id, array $productData): bool|Product
+    {
+        $product = $this->productRepository->update($id, $productData);
+        if ($product) {
+            return Product::fromModel($product);
+        }
+        return false;
+    }
+
+    public function destroy(int $id): bool
+    {
+        return $this->productRepository->destroy($id);
     }
 }

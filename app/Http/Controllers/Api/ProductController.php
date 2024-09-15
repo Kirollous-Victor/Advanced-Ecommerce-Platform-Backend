@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Interfaces\ProductRepositoryInterface;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,12 +10,10 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
-    protected ProductRepositoryInterface $productRepository;
     protected ProductService $productService;
 
-    public function __construct(ProductRepositoryInterface $productRepository, ProductService $productService)
+    public function __construct(ProductService $productService)
     {
-        $this->productRepository = $productRepository;
         $this->productService = $productService;
     }
 
@@ -40,7 +37,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $category = $this->productRepository->store($validator->validated());
+        $category = $this->productService->store($validator->validated());
         return response()->json(['data' => $category, 'message' => 'Product has been created'], 201);
     }
 
@@ -70,7 +67,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $product = $this->productRepository->updateTrash($id, $validator->validated());
+        $product = $this->productService->update($id, $validator->validated());
         if ($product) {
             return response()->json(['message' => 'Product has been updated', 'data' => $product]);
         }
@@ -85,7 +82,7 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        if ($this->productRepository->destroy($id)) {
+        if ($this->productService->destroy($id)) {
             return response()->json(['message' => 'Product has been deleted']);
         }
         return response()->json(['message' => 'Product has not been deleted']);
