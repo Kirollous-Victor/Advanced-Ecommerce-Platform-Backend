@@ -2,16 +2,17 @@
 
 namespace App\Services;
 
-use App\Repositories\CategoryRepository;
+use App\Interfaces\CategoryRepositoryInterface;
+use App\Models\Category;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 class CategoryService
 {
-    private CategoryRepository $categoryRepository;
+    private CategoryRepositoryInterface $categoryRepository;
 
-    public function __construct(CategoryRepository $categoryRepository)
+    public function __construct(CategoryRepositoryInterface $categoryRepository)
     {
         $this->categoryRepository = $categoryRepository;
     }
@@ -69,5 +70,29 @@ class CategoryService
             }
         }
 
+    }
+
+    public function store(array $categoryData): Category
+    {
+        $category = $this->categoryRepository->store($categoryData);
+        return Category::fromModel($category);
+    }
+
+    public function update(int $id, array $categoryData): bool|Category
+    {
+        $category = $this->categoryRepository->update($id, $categoryData);
+        if ($category)
+            return Category::fromModel($category);
+        return false;
+    }
+
+    public function destroy(int $id): bool
+    {
+        return $this->categoryRepository->destroy($id);
+    }
+
+    public function updateParentCategory(array $subcategory_ids, int $parent_id = null): bool
+    {
+        return $this->categoryRepository->updateParentCategory($subcategory_ids, $parent_id);
     }
 }
