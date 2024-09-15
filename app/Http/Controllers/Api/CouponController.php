@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Interfaces\CouponRepositoryInterface;
+use App\Services\CouponService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -11,17 +11,17 @@ use Illuminate\Validation\Rule;
 
 class CouponController extends Controller
 {
-    protected CouponRepositoryInterface $couponRepository;
+    protected CouponService $couponService;
 
-    public function __construct(CouponRepositoryInterface $couponRepository)
+    public function __construct(CouponService $couponService)
     {
-        $this->couponRepository = $couponRepository;
+        $this->couponService = $couponService;
     }
+
 
     public function index(): JsonResponse
     {
-        $coupons = $this->couponRepository->all(['code', 'discount_type', 'discount_value', 'expiry_date'],
-            ['expiry_date' => 'asc']);
+        $coupons = $this->couponService->all();
         return response()->json(['data' => $coupons]);
     }
 
@@ -37,7 +37,7 @@ class CouponController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $coupon = $this->couponRepository->store($validator->validated());
+        $coupon = $this->couponService->store($validator->validated());
         return response()->json(['message' => 'Coupon has been created', 'data' => $coupon], 201);
     }
 
@@ -49,7 +49,7 @@ class CouponController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $category = $this->couponRepository->find($id);
+        $category = $this->couponService->find($id);
         return response()->json(['data' => $category]);
     }
 
@@ -66,7 +66,7 @@ class CouponController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $coupon = $this->couponRepository->update($id, $validator->validated());
+        $coupon = $this->couponService->update($id, $validator->validated());
         return response()->json(['message' => 'Coupon has been updated', 'data' => $coupon]);
     }
 
@@ -78,7 +78,7 @@ class CouponController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $this->couponRepository->destroy($id);
+        $this->couponService->destroy($id);
         return response()->json(['message' => 'Coupon has been deleted']);
     }
 }
