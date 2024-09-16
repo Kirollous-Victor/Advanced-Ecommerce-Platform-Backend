@@ -2,7 +2,7 @@
 
 namespace App\Interfaces;
 
-interface UserRepositoryInterface extends BaseEloquentInterface
+interface UserRepositoryInterface extends SoftDeletingRepositoryInterface
 {
     //
 }
