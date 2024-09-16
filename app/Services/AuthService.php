@@ -36,7 +36,7 @@ class AuthService
             return $user->createToken('auth_token')->plainTextToken;
         return false;
     }
-    
+
     public function register(array $userData): void
     {
         DB::beginTransaction();
