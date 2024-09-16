@@ -107,6 +107,16 @@ class BaseEloquentRepository implements BaseEloquentInterface
         return false;
     }
 
+    public function updateBy(string $field, string $value, array $data): bool
+    {
+        return $this->model::where($field, $value)->update($data);
+    }
+
+    public function updateByMany(array $andParameters, array $data, array $orParameters = []): bool
+    {
+        return $this->model::where($andParameters)->orWhere($orParameters)->update($data);
+    }
+
     public function destroy($id): bool
     {
         return $this->model::where('id', $id)->delete();

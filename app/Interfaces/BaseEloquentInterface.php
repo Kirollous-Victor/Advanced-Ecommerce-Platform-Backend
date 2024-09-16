@@ -26,8 +26,8 @@ interface BaseEloquentInterface
     public function findBy(string $field, string $value, array $columns = ['*'], array $orderBy = [],
                            array  $relations = []): ?Model;
 
-    public function findByMany(array $andParameters, array $orParameters = [], array $columns = ['*'], array $orderBy = [],
-                               array $relations = []): ?Model;
+    public function findByMany(array $andParameters, array $orParameters = [], array $columns = ['*'],
+                               array $orderBy = [], array $relations = []): ?Model;
 
     public function getWhereIn(string $fieldName, array $values, array $columns = ['*'], array $orderBy = [],
                                array  $relations = []): Collection;
@@ -35,6 +35,10 @@ interface BaseEloquentInterface
     public function store(array $data): Model;
 
     public function update(int $id, array $data): bool|Model;
+
+    public function updateBy(string $field, string $value, array $data): bool;
+
+    public function updateByMany(array $andParameters, array $data, array $orParameters = []): bool;
 
     public function destroy($id): bool;
 
