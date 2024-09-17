@@ -54,6 +54,23 @@ class AuthController extends Controller
         return response()->json(['message' => 'Code not found or may expired'], 422);
     }
 
+    public function resendVerificationCode(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'bail|required|string|max:50|email:rfc,dns|exists:users,email',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->messages()], 422);
+        }
+        try {
+            if ($this->authService->resendVerificationCode($validator->validated()['email']))
+                return response()->json(['message' => 'New code has been generated and sent to email']);
+            return response()->json(['message' => 'No verification needed']);
+        } catch (\Exception $exception) {
+            return response()->json(['message' => 'Something went wrong, try again later'], 500);
+        }
+    }
+
     public function login(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [

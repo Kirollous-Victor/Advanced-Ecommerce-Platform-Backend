@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\VendorController;
 use Illuminate\Support\Facades\Route;
 
+Route::post('resend-verification-code', [AuthController::class, 'resendVerificationCode'])
+    ->middleware('limit_requests:1,60')->name('resend.verification.code');
 Route::group(['middleware' => ['limit_requests:5,60'], 'prefix' => '/'], function () {
     Route::post('login', [AuthController::class, 'login'])->name('login');
     Route::post('register', [AuthController::class, 'register'])->name('register');

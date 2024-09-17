@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Interfaces\UserRepositoryInterface;
 use App\Mail\VerificationEmail;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,11 +45,7 @@ class AuthService
             $userData['password'] = Hash::make($userData['password']);
             $userData['role'] = 'user';
             $user = $this->userRepository->store($userData);
-            $code = $this->generateUniqueVerificationCode();
-            $emailData = ['email' => $user->email, 'code' => $code];
-            DB::table('email_verification')->insert($emailData);
-            $emailData['name'] = $user['name'];
-            Mail::to($user->email)->send(new VerificationEmail($emailData));
+            $this->sendVerificationCode($user);
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -56,7 +53,35 @@ class AuthService
         }
     }
 
-    public function generateUniqueVerificationCode(): string
+    public function resendVerificationCode(string $email): bool
+    {
+        $user = $this->userRepository->findBy('email', $email);
+        if (!$user->email_verified_at) {
+            DB::beginTransaction();
+            try {
+                DB::table('email_verification')->where('email', $user->email)->delete();
+                $this->sendVerificationCode($user);
+                DB::commit();
+                return true;
+            } catch (\Exception $exception) {
+                DB::rollBack();
+                throw $exception;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    private function sendVerificationCode(User $user): void
+    {
+        $code = $this->generateUniqueVerificationCode();
+        $emailData = ['email' => $user->email, 'code' => $code];
+        DB::table('email_verification')->insert($emailData);
+        $emailData['name'] = $user->name;
+        Mail::to($user->email)->send(new VerificationEmail($emailData));
+    }
+
+    private function generateUniqueVerificationCode(): string
     {
         do {
             $code = strtoupper(Str::password(7, symbols: false));
