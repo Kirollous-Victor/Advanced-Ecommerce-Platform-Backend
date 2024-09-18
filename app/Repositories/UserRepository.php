@@ -11,10 +11,4 @@ class UserRepository extends SoftDeletingRepository implements UserRepositoryInt
     {
         parent::__construct($user);
     }
-
-    public function store(array $data): User
-    {
-        $user = parent::store($data);
-        return User::fromModel($user);
-    }
 }

@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Interfaces\ProductRepositoryInterface;
-use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 class ProductService
 {
@@ -22,7 +22,7 @@ class ProductService
      * default => Full Product Model
      * @param int|null $mode 1, 2
      */
-    public function find(int $id, int $mode = null): ?Product
+    public function find(int $id, int $mode = null): ?Model
     {
         $columns = ['id', 'name', 'description', 'price', 'stock', 'vendor_id', 'category_id'];
         $relations = ['vendor'];
@@ -48,18 +48,14 @@ class ProductService
         }
     }
 
-    public function store(array $productData): Product
+    public function store(array $productData): Model
     {
-        return Product::fromModel($this->productRepository->store($productData));
+        return $this->productRepository->store($productData);
     }
 
-    public function update(int $id, array $productData): bool|Product
+    public function update(int $id, array $productData): bool|Model
     {
-        $product = $this->productRepository->update($id, $productData);
-        if ($product) {
-            return Product::fromModel($product);
-        }
-        return false;
+        return $this->productRepository->update($id, $productData);
     }
 
     public function destroy(int $id): bool

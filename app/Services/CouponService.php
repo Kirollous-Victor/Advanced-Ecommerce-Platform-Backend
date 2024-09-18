@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Interfaces\CouponRepositoryInterface;
-use App\Models\Coupon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 class CouponService
 {
@@ -21,22 +21,19 @@ class CouponService
             ['expiry_date' => 'asc']);
     }
 
-    public function store(array $couponData): Coupon
+    public function store(array $couponData): Model
     {
-        return Coupon::fromModel($this->couponRepository->store($couponData));
+        return $this->couponRepository->store($couponData);
     }
 
-    public function find(int $id): Coupon
+    public function find(int $id): Model
     {
-        return Coupon::fromModel($this->couponRepository->find($id));
+        return $this->couponRepository->find($id);
     }
 
-    public function update(int $id, array $couponData): bool|Coupon
+    public function update(int $id, array $couponData): bool|Model
     {
-        $coupon = $this->couponRepository->update($id, $couponData);
-        if ($coupon)
-            return Coupon::fromModel($coupon);
-        return false;
+        return $this->couponRepository->update($id, $couponData);
     }
 
     public function destroy(int $id): bool

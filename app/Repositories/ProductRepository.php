@@ -12,22 +12,4 @@ class ProductRepository extends SoftDeletingRepository implements ProductReposit
     {
         parent::__construct($product);
     }
-
-    public function find(int $id, array $columns = ['*'], array $relations = []): ?Product
-    {
-        $product = parent::find($id, $columns, $relations);
-        if ($product) {
-            return Product::fromModel($product);
-        }
-        return null;
-    }
-
-    public function findTrash(int $id, array $columns = ['*'], array $relations = []): ?Product
-    {
-        $product = parent::findTrash($id, $columns, $relations);
-        if ($product) {
-            return Product::fromModel($product);
-        }
-        return null;
-    }
 }

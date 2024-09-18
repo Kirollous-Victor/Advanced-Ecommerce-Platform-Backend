@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Interfaces\CategoryRepositoryInterface;
-use App\Models\Category;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -72,18 +71,14 @@ class CategoryService
 
     }
 
-    public function store(array $categoryData): Category
+    public function store(array $categoryData): Model
     {
-        $category = $this->categoryRepository->store($categoryData);
-        return Category::fromModel($category);
+        return $this->categoryRepository->store($categoryData);
     }
 
-    public function update(int $id, array $categoryData): bool|Category
+    public function update(int $id, array $categoryData): bool|Model
     {
-        $category = $this->categoryRepository->update($id, $categoryData);
-        if ($category)
-            return Category::fromModel($category);
-        return false;
+        return $this->categoryRepository->update($id, $categoryData);
     }
 
     public function destroy(int $id): bool

@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-use App\Traits\Castable;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Coupon extends Model
 {
-    use HasFactory, Castable;
+    use HasFactory;
 
     protected $fillable = ['code', 'discount_type', 'discount_value', 'expiry_date'];
 
