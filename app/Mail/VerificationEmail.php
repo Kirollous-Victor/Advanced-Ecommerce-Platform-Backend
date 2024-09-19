@@ -12,18 +12,23 @@ class VerificationEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    protected array $mailData;
+    protected string $mailTo;
+    protected string $name;
+    protected string $code;
 
-    public function __construct(array $mailData)
+    public function __construct(string $mailTo, string $name, string $code)
     {
-        $this->mailData = $mailData;
+        $this->mailTo = $mailTo;
+        $this->name = $name;
+        $this->code = $code;
     }
+
 
     public function envelope(): Envelope
     {
         return new Envelope(
             from: env('MAIL_FROM_ADDRESS'),
-            to: $this->mailData['email'],
+            to: $this->mailTo,
             subject: 'Advanced E-commerce Verification Email',
         );
     }
@@ -33,8 +38,8 @@ class VerificationEmail extends Mailable
         return new Content(
             view: 'emails.verification',
             with: [
-                'name' => $this->mailData['name'],
-                'code' => $this->mailData['code']
+                'name' => $this->name,
+                'code' => $this->code
             ],
         );
     }

@@ -3,38 +3,38 @@
 namespace App\Services;
 
 use App\Interfaces\UserRepositoryInterface;
-use App\Mail\VerificationEmail;
 use App\Models\User;
+use App\Traits\LogTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 
 class AuthService
 {
-    private UserRepositoryInterface $userRepository;
+    use LogTrait;
 
-    public function __construct(UserRepositoryInterface $userRepository)
+    private UserRepositoryInterface $userRepository;
+    private EmailService $emailService;
+    private TokenService $tokenService;
+
+    public function __construct(UserRepositoryInterface $userRepository, EmailService $emailService, TokenService $tokenService)
     {
         $this->userRepository = $userRepository;
+        $this->emailService = $emailService;
+        $this->tokenService = $tokenService;
     }
 
-    public function login(array $cardinality): bool|string
+
+    public function login(array $cardinality, bool $remember_me = false): bool|array
     {
         if (Auth::attempt($cardinality)) {
-            return Auth::user()->createToken('auth_token')->plainTextToken;
+            $this->tokenService->revokeUserTokens();
+            $token = $this->tokenService->generateToken(Auth::user());
+            return $token;
         }
-        return false;
-    }
-
-    public function loginByEmail(string $email): bool|string
-    {
-        $user = $this->userRepository->findBy('email', $email);
-        if ($user)
-            return $user->createToken('auth_token')->plainTextToken;
         return false;
     }
 
@@ -49,6 +49,7 @@ class AuthService
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
+            $this->logException($exception, __CLASS__ . ':' . __METHOD__ . '|' . __LINE__);
             throw $exception;
         }
     }
@@ -65,6 +66,7 @@ class AuthService
                 return true;
             } catch (\Exception $exception) {
                 DB::rollBack();
+                $this->logException($exception, __CLASS__ . ':' . __METHOD__ . '|' . __LINE__);
                 throw $exception;
             }
         } else {
@@ -75,10 +77,8 @@ class AuthService
     private function sendVerificationCode(User $user): void
     {
         $code = $this->generateUniqueVerificationCode();
-        $emailData = ['email' => $user->email, 'code' => $code];
-        DB::table('email_verification')->insert($emailData);
-        $emailData['name'] = $user->name;
-        Mail::to($user->email)->send(new VerificationEmail($emailData));
+        DB::table('email_verification')->insert(['email' => $user->email, 'code' => $code]);
+        $this->emailService->sendVerificationEmail($user->email, $user->name, $code);
     }
 
     private function generateUniqueVerificationCode(): string
@@ -92,7 +92,7 @@ class AuthService
         return $code;
     }
 
-    public function verifyEmail(string $code): bool|string
+    public function verifyEmail(string $code): bool|array
     {
         $record = DB::table('email_verification')->where(compact('code'))->first();
         if (!$record)
@@ -103,8 +103,22 @@ class AuthService
         }
         $this->userRepository->updateBy('email', $record->email, ['email_verified_at' => now()]);
         DB::table('email_verification')->where(compact('code'))->delete();
-        return $this->loginByEmail($record->email);
+        return $this->tokenService->generateTokenByEmail($record->email);
     }
 
+    public function logout(): bool
+    {
+        return $this->tokenService->revokeUserTokens();
+    }
 
+    public function refreshToken(): bool|array
+    {
+        $user = auth()->user();
+        if ($this->tokenService->revokeUserTokens(current: true)) {
+            $token['expires_in'] = now()->addHour();
+            $token['token'] = $user->createToken('auth_token', ['*'], $token['expires_in'])->plainTextToken;
+            return $token;
+        }
+        return false;
+    }
 }

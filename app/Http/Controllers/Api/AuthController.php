@@ -4,19 +4,21 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AuthService;
+use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
     protected AuthService $authService;
+    protected UserService $userService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, UserService $userService)
     {
         $this->authService = $authService;
+        $this->userService = $userService;
     }
 
     public function register(Request $request): JsonResponse
@@ -34,7 +36,7 @@ class AuthController extends Controller
             $this->authService->register($validator->validated());
             return response()->json(['message' => 'Account created Successfully'], 201);
         } catch (\Exception $exception) {
-            return response()->json(['message' => 'Something went wrong, try again later'], 500);
+            return response()->json(['error' => 'Something went wrong, try again later'], 500);
         }
     }
 
@@ -48,10 +50,10 @@ class AuthController extends Controller
         }
         $token = $this->authService->verifyEmail($validator->validated()['code']);
         if ($token) {
-            return response()->json(['message' => 'Email verified Successfully', 'access_token' => $token,
-                'token_type' => 'Bearer']);
+            return response()->json(['message' => 'Email verified Successfully', 'access_token' => $token['token'],
+                'token_type' => 'Bearer', 'expires_in' => $token['expires_in']]);
         }
-        return response()->json(['message' => 'Code not found or may expired'], 422);
+        return response()->json(['error' => 'Code not found or may expired'], 422);
     }
 
     public function resendVerificationCode(Request $request): JsonResponse
@@ -67,7 +69,7 @@ class AuthController extends Controller
                 return response()->json(['message' => 'New code has been generated and sent to email']);
             return response()->json(['message' => 'No verification needed']);
         } catch (\Exception $exception) {
-            return response()->json(['message' => 'Something went wrong, try again later'], 500);
+            return response()->json(['error' => 'Something went wrong, try again later'], 500);
         }
     }
 
@@ -75,27 +77,40 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|max:50|email:rfc,dns',
-            'password' => 'required|string|between:8,16'
+            'password' => 'required|string|between:8,16',
+            'remember_me' => 'required|boolean'
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $token = $this->authService->login($validator->validated());
+        $cardinality = Arr::except($validator->validated(), ['remember_me']);
+        $token = $this->authService->login($cardinality, $validator->getValue('remember_me'));
         if ($token) {
-            return response()->json(['message' => 'Login success', 'access_token' => $token,
-                'token_type' => 'Bearer']);
+            return response()->json(['message' => 'Login success', 'access_token' => $token['token'],
+                'token_type' => 'Bearer', 'expires_in' => $token['expires_in']]);
         }
         return response()->json(['error' => 'Your Email or Password may be wrong, please try again.'], 401);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function refreshToken(): JsonResponse
     {
-        auth()->user()->tokens()->delete();
-        return response()->json(['message' => 'Logout successfully']);
+        $token = $this->authService->refreshToken();
+        if ($token)
+            return response()->json(['access_token' => $token['token'], 'token_type' => 'Bearer',
+                'expires_in' => $token['expires_in']]);
+        return response()->json(['error' => 'Something went wrong, try again later'], 500);
     }
 
-    public function userProfile(Request $request)
+    public function logout(): JsonResponse
     {
+        if ($this->authService->logout())
+            return response()->json(['message' => 'Logout successfully']);
+        return response()->json(['error' => 'Something went wrong, try again later'], 500);
+    }
 
+    public function userProfile(): JsonResponse
+    {
+        $userData = $this->userService->getUserData();
+        return response()->json(['data' => $userData]);
     }
 }
