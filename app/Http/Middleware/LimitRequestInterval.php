@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class LimitRequestInterval
 {
-    public function handle(Request $request, Closure $next, int $maxAttempts = 2, int $decaySeconds = 8): JsonResponse
+    public function handle(Request $request, Closure $next, int $maxAttempts = 2, int $decaySeconds = 10): JsonResponse
     {
         if (app()->environment('local')) {
             $key = $request->route()->getName() . ':' . $request->ip();
