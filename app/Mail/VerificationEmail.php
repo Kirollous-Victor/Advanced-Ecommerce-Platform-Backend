@@ -12,13 +12,13 @@ class VerificationEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    protected string $mailTo;
+    protected string $email;
     protected string $name;
     protected string $code;
 
-    public function __construct(string $mailTo, string $name, string $code)
+    public function __construct(string $email, string $name, string $code)
     {
-        $this->mailTo = $mailTo;
+        $this->email = $email;
         $this->name = $name;
         $this->code = $code;
     }
@@ -28,7 +28,7 @@ class VerificationEmail extends Mailable
     {
         return new Envelope(
             from: env('MAIL_FROM_ADDRESS'),
-            to: $this->mailTo,
+            to: $this->email,
             subject: 'Advanced E-commerce Verification Email',
         );
     }
