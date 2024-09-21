@@ -33,13 +33,9 @@ class TokenService
         return false;
     }
 
-    public function revokeUserTokens(User $user = null, bool $current = false): bool
+    public function revokeUserTokens(?User $user = null, bool $current = false): bool
     {
-        if (!$user) {
-            if ($current)
-                return auth()->user()->currentAccessToken()->delete();
-            return auth()->user()->tokens()->delete();
-        }
-        return $user->tokens()->delete();
+        $user = $user ?? auth()->user();
+        return $current ? $user->currentAccessToken()->delete() : $user->tokens()->delete();
     }
 }
