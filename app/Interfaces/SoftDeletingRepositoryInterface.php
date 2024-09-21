@@ -2,7 +2,6 @@
 
 namespace App\Interfaces;
 
-use App\Repositories\SoftDeletingRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
