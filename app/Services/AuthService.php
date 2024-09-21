@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Interfaces\EmailVerificationInterface;
+use App\Interfaces\PasswordResetRepositoryInterface;
 use App\Interfaces\UserRepositoryInterface;
 use App\Models\User;
 use App\Traits\LogTrait;
@@ -17,14 +19,20 @@ class AuthService
     use LogTrait;
 
     private UserRepositoryInterface $userRepository;
+    private EmailVerificationInterface $emailVerificationRepo;
+    private PasswordResetRepositoryInterface $passwordResetRepository;
     private EmailService $emailService;
     private TokenService $tokenService;
 
-    public function __construct(UserRepositoryInterface $userRepository, EmailService $emailService, TokenService $tokenService)
+    public function __construct(UserRepositoryInterface          $userRepository, EmailService $emailService,
+                                EmailVerificationInterface       $emailVerificationRepo, TokenService $tokenService,
+                                PasswordResetRepositoryInterface $passwordResetRepository)
     {
         $this->userRepository = $userRepository;
         $this->emailService = $emailService;
         $this->tokenService = $tokenService;
+        $this->emailVerificationRepo = $emailVerificationRepo;
+        $this->passwordResetRepository = $passwordResetRepository;
     }
 
 
@@ -32,8 +40,7 @@ class AuthService
     {
         if (Auth::attempt($cardinality)) {
             $this->tokenService->revokeUserTokens();
-            $token = $this->tokenService->generateToken(Auth::user());
-            return $token;
+            return $this->tokenService->generateToken(Auth::user(), $remember_me);
         }
         return false;
     }
@@ -60,7 +67,7 @@ class AuthService
         if (!$user->email_verified_at) {
             DB::beginTransaction();
             try {
-                DB::table('email_verification')->where('email', $user->email)->delete();
+                $this->emailVerificationRepo->destroyBy('email', $user->email);
                 $this->sendVerificationCode($user);
                 DB::commit();
                 return true;
@@ -76,12 +83,12 @@ class AuthService
 
     private function sendVerificationCode(User $user): void
     {
-        $code = $this->generateUniqueVerificationCode();
-        DB::table('email_verification')->insert(['email' => $user->email, 'code' => $code]);
+        $code = $this->createVerificationCode();
+        $this->emailVerificationRepo->store(['email' => $user->email, 'code' => $code]);
         $this->emailService->sendVerificationEmail($user->email, $user->name, $code);
     }
 
-    private function generateUniqueVerificationCode(): string
+    private function createVerificationCode(): string
     {
         do {
             $code = strtoupper(Str::password(7, symbols: false));
@@ -94,15 +101,15 @@ class AuthService
 
     public function verifyEmail(string $code): bool|array
     {
-        $record = DB::table('email_verification')->where(compact('code'))->first();
+        $record = $this->emailVerificationRepo->findBy('code', $code);
         if (!$record)
             return false;
         if (Carbon::createFromTimeString($record->created_at)->diff(now())->hours > 2) {
-            DB::table('email_verification')->where(compact('code'))->delete();
+            $this->emailVerificationRepo->destroyBy('code', $code);
             return false;
         }
         $this->userRepository->updateBy('email', $record->email, ['email_verified_at' => now()]);
-        DB::table('email_verification')->where(compact('code'))->delete();
+        $this->emailVerificationRepo->destroyBy('code', $code);
         return $this->tokenService->generateTokenByEmail($record->email);
     }
 
@@ -120,5 +127,45 @@ class AuthService
             return $token;
         }
         return false;
+    }
+
+    public function sendPasswordResetEmail(string $email): void
+    {
+        $user = $this->userRepository->isExistsBy('email', $email);
+        if ($user) {
+            try {
+                DB::beginTransaction();
+                $token = $this->generateResetPasswordToken($email);
+                $url = route('reset.password', compact('token'));
+                $this->emailService->sendPasswordResetEmail($email, $url);
+                DB::commit();
+            } catch (\Exception $exception) {
+                DB::rollBack();
+                $this->logException($exception, __CLASS__ . ':' . __METHOD__ . '|' . __LINE__);
+                throw $exception;
+            }
+        }
+    }
+
+    private function generateResetPasswordToken(string $email): string
+    {
+        $token = strtoupper(Str::password(30, symbols: false));
+        $this->passwordResetRepository->destroyBy('email', $email);
+        $this->passwordResetRepository->store(['email' => $email, 'token' => $token]);
+        return $token;
+    }
+
+    public function changePassword(string $token, string $password): bool
+    {
+        $record = $this->passwordResetRepository->findBy('token', $token);
+        if (!$record)
+            return false;
+        if (Carbon::createFromTimeString($record->created_at)->diff(now())->hours > 2) {
+            $this->passwordResetRepository->destroyBy('token', $token);
+            return false;
+        }
+        $this->userRepository->updateBy('email', $record->email, ['password' => Hash::make($password)]);
+        $this->passwordResetRepository->destroyBy('token', $token);
+        return true;
     }
 }

@@ -83,8 +83,8 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $cardinality = Arr::except($validator->validated(), ['remember_me']);
-        $token = $this->authService->login($cardinality, $validator->getValue('remember_me'));
+        $cardinality = $request->only(['email', 'password']);
+        $token = $this->authService->login($cardinality, $request->remember_me);
         if ($token) {
             return response()->json(['message' => 'Login success', 'access_token' => $token['token'],
                 'token_type' => 'Bearer', 'expires_in' => $token['expires_in']]);
@@ -99,6 +99,39 @@ class AuthController extends Controller
             return response()->json(['access_token' => $token['token'], 'token_type' => 'Bearer',
                 'expires_in' => $token['expires_in']]);
         return response()->json(['error' => 'Something went wrong, try again later'], 500);
+    }
+
+    public function forgetPassword(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string|max:50|email:rfc,dns',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->messages()], 422);
+        }
+        try {
+            $this->authService->sendPasswordResetEmail($request->email);
+            return response()->json(['message' => 'Password reset email sent successfully.']);
+        } catch (\Exception $exception) {
+            return response()->json(['message' => 'Failed to send reset email, please try again later.'], 500);
+        }
+    }
+
+    public function resetPassword(string $token, Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all() + compact('token'), [
+            'token' => 'required|string|size:30|exists:password_reset_tokens,token',
+            'password' => 'bail|required|string|between:8,16|' .
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$_\-+*!?:]).+$/',
+            'confirm_password' => 'required|same:password',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->messages()], 422);
+        }
+        if ($this->authService->changePassword($token, $request->password))
+            return response()->json(['message' => 'Password has been changed successfully.']);
+        return response()->json(['message' => 'Failed to send change password, please try again later.'], 500);
+
     }
 
     public function logout(): JsonResponse
