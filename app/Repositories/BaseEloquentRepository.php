@@ -117,9 +117,24 @@ class BaseEloquentRepository implements BaseEloquentInterface
         return $this->model::where($andParameters)->orWhere($orParameters)->update($data);
     }
 
-    public function destroy($id): bool
+    public function destroy(int $id): bool
     {
         return $this->model::where('id', $id)->delete();
+    }
+
+    public function isExists(int $id): bool
+    {
+        return $this->model::where('id', $id)->exists();
+    }
+
+    public function isExistsBy(string $field, string $value): bool
+    {
+        return $this->model::where($field, $value)->exists();
+    }
+
+    public function isExistsByMany(array $andParameters, array $orParameters = []): bool
+    {
+        return $this->model::where($andParameters)->orWhere($orParameters)->exists();
     }
 
     public function count(array $andParameters = [], array $orParameters = []): int

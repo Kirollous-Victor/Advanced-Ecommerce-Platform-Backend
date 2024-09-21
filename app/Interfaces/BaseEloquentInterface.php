@@ -40,7 +40,13 @@ interface BaseEloquentInterface
 
     public function updateByMany(array $andParameters, array $data, array $orParameters = []): bool;
 
-    public function destroy($id): bool;
+    public function destroy(int $id): bool;
+
+    public function isExists(int $id): bool;
+
+    public function isExistsBy(string $field, string $value): bool;
+
+    public function isExistsByMany(array $andParameters, array $orParameters = []): bool;
 
     public function count(array $andParameters = [], array $orParameters = []): int;
 }
