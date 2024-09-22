@@ -8,7 +8,6 @@ use App\Interfaces\UserRepositoryInterface;
 use App\Models\User;
 use App\Traits\LogTrait;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -38,9 +37,13 @@ class AuthService
 
     public function login(array $cardinality, bool $remember_me = false): bool|array
     {
-        if (Auth::attempt($cardinality)) {
-            $this->tokenService->revokeUserTokens();
-            return $this->tokenService->generateToken(Auth::user(), $remember_me);
+        $user = $this->userRepository->findBy('email', $cardinality['email']);
+        if ($user and Hash::check($cardinality['password'], $user->password)) {
+            /**
+             * Need to revoke old tokens
+             */
+            /** @var User $user */
+            return $this->tokenService->generateToken($user, $remember_me);
         }
         return false;
     }
@@ -52,6 +55,7 @@ class AuthService
             $userData['password'] = Hash::make($userData['password']);
             $userData['role'] = 'user';
             $user = $this->userRepository->store($userData);
+            /** @var User $user */
             $this->sendVerificationCode($user);
             DB::commit();
         } catch (\Exception $exception) {
@@ -68,6 +72,7 @@ class AuthService
             DB::beginTransaction();
             try {
                 $this->emailVerificationRepo->destroyBy('email', $user->email);
+                /** @var User $user */
                 $this->sendVerificationCode($user);
                 DB::commit();
                 return true;
@@ -115,13 +120,13 @@ class AuthService
 
     public function logout(): bool
     {
-        return $this->tokenService->revokeUserTokens();
+        return $this->tokenService->revokeUserTokens(current: true);
     }
 
     public function refreshToken(): bool|array
     {
         $user = auth()->user();
-        if ($this->tokenService->revokeUserTokens(current: true)) {
+        if ($this->tokenService->revokeUserTokens($user, true)) {
             $token['expires_in'] = now()->addHour();
             $token['token'] = $user->createToken('auth_token', ['*'], $token['expires_in'])->plainTextToken;
             return $token;
