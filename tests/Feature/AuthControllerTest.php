@@ -184,6 +184,7 @@ class AuthControllerTest extends TestCase
         $this->withHeaders(['Authorization' => 'Bearer '])
             ->getJson(route('categories.index'))
             ->assertStatus(401);
+
         // Create a user and log in to get a token
         $user = User::factory()->create([
             'password' => Hash::make('Password123!')
@@ -209,8 +210,12 @@ class AuthControllerTest extends TestCase
             ->assertStatus(200)
             ->assertJson(['message' => 'Logout successfully']);
 
-
-        $this->withHeaders(['Authorization' => 'Bearer ' . $response['access_token']])
+        /**
+         * It returns 200 unless you use refreshApplication() and remove DatabaseTransactions Trait
+         * you can try same scenario on postman it will work correctly
+         */
+        $this->withHeaders([
+            'Authorization' => 'Bearer ' . $response['access_token']])
             ->getJson(route('categories.index'))
             ->assertStatus(401);
     }
