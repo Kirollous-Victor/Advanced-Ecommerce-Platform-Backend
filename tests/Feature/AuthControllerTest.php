@@ -32,7 +32,6 @@ class AuthControllerTest extends TestCase
         $this->assertNotNull($user);
 
         // Retrieve verification code from database
-//        $verificationCode = VerificationCode::where('user_id', $user->id)->first();
         $verificationCode = DB::table('email_verification')->where('email', $user->email)->first();
         $this->assertNotNull($verificationCode);
 
