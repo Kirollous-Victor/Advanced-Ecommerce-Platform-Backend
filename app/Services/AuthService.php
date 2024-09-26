@@ -104,7 +104,7 @@ class AuthService
         return $code;
     }
 
-    public function verifyEmail(string $code): bool|array
+    public function verifyEmail(string $code): bool
     {
         $record = $this->emailVerificationRepo->findBy('code', $code);
         if (!$record)
@@ -113,9 +113,10 @@ class AuthService
             $this->emailVerificationRepo->destroyBy('code', $code);
             return false;
         }
-        $this->userRepository->updateBy('email', $record->email, ['email_verified_at' => now()]);
+        if (auth()->user()->email != $record->email)
+            return false;
         $this->emailVerificationRepo->destroyBy('code', $code);
-        return $this->tokenService->generateTokenByEmail($record->email);
+        return $this->userRepository->updateBy('email', $record->email, ['email_verified_at' => now()]);
     }
 
     public function logout(): bool
