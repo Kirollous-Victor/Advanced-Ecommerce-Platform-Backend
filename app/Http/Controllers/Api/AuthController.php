@@ -48,10 +48,8 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 422);
         }
-        $token = $this->authService->verifyEmail($validator->validated()['code']);
-        if ($token) {
-            return response()->json(['message' => 'Email verified Successfully', 'access_token' => $token['token'],
-                'token_type' => 'Bearer', 'expires_in' => $token['expires_in']]);
+        if ($this->authService->verifyEmail($validator->validated()['code'])) {
+            return response()->json(['message' => 'Email verified Successfully']);
         }
         return response()->json(['error' => 'Code not found or may expired'], 422);
     }
@@ -143,7 +141,8 @@ class AuthController extends Controller
 
     public function userProfile(): JsonResponse
     {
-        $userData = $this->userService->getUserData();
+//        $userData = $this->userService->getUserData();
+        $userData = auth()->id();
         return response()->json(['data' => $userData]);
     }
 }
