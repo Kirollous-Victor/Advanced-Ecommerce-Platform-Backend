@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -13,6 +14,11 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        DB::table('roles')->delete();
+        DB::table('permissions')->delete();
+        DB::table('role_has_permissions')->delete();
+        DB::table('model_has_permissions')->delete();
+        DB::table('model_has_roles')->delete();
         $adminRole = Role::create(['name' => 'admin']);
         $managerRole = Role::create(['name' => 'manager']);
         $vendorRole = Role::create(['name' => 'vendor']);
@@ -36,6 +42,7 @@ class RolePermissionSeeder extends Seeder
          * Manage Marketing: Oversee promotional campaigns, email marketing, banners, and pop-ups.
          */
         $adminPermissions = [
+            'manage categories',
             'add user', 'edit user', 'delete user', 'show user',
             'add role to user', 'remove role from user',
             'add permissions to user', 'remove permissions from user',
@@ -43,7 +50,6 @@ class RolePermissionSeeder extends Seeder
             'edit order', 'delete order', 'show order',
             'edit payment', 'show payment',
             'view report',
-            'add category', 'edit category', 'delete category',
             'add coupon', 'edit coupon', 'delete coupon', 'show coupon',
             'add settings', 'edit settings', 'delete settings', 'show settings',
             'add inventory', 'edit inventory', 'delete inventory', 'show inventory',
@@ -110,6 +116,7 @@ class RolePermissionSeeder extends Seeder
          * Manage SEO: Edit product metadata, tags, and categories for SEO purposes.
          */
         $marketingStaffPermissions = [
+            'manage categories',
             'show payment',
             'view report',
             'add coupon', 'edit coupon', 'delete coupon', 'show coupon',
@@ -126,7 +133,9 @@ class RolePermissionSeeder extends Seeder
             'edit order', 'show order',
         ];
 
-        foreach ($adminPermissions as $permission) {
+        $permissions = array_unique(array_merge($adminPermissions, $managerPermissions, $vendorPermissions,
+            $customerSupportPermissions, $shippingStaffPermissions, $marketingStaffPermissions, $customerPermissions));
+        foreach ($permissions as $permission) {
             Permission::create(['name' => $permission]);
         }
 
@@ -138,8 +147,11 @@ class RolePermissionSeeder extends Seeder
         $marketingStaffRole->syncPermissions($marketingStaffPermissions);
         $customerRole->syncPermissions($customerPermissions);
 
-        $admin = User::factory()->create([
+        User::where(['email' => 'admin_Admin@yahoo.com'])->forcedelete();
+        $admin = User::create([
+            'name' => 'Admin',
             'email' => 'admin_Admin@yahoo.com',
+            'email_verified_at' => now(),
             'password' => Hash::make('AdminPassword'),
             'role' => 'admin'
         ]);

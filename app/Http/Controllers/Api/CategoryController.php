@@ -6,15 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Services\CategoryService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Validator;
 
-class CategoryController extends Controller
+class CategoryController extends Controller implements HasMiddleware
 {
     protected CategoryService $categoryService;
 
     public function __construct(CategoryService $categoryService)
     {
         $this->categoryService = $categoryService;
+    }
+
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('auth:sanctum', except: ['index', 'show']),
+            new Middleware('verified', except: ['index', 'show']),
+            new Middleware('permission:manage categories', except: ['index', 'show']),
+        ];
     }
 
     public function index(): JsonResponse
