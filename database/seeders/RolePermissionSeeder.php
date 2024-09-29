@@ -50,7 +50,7 @@ class RolePermissionSeeder extends Seeder
             'edit order', 'delete order', 'show order',
             'edit payment', 'show payment',
             'view report',
-            'add coupon', 'edit coupon', 'delete coupon', 'show coupon',
+            'manage coupons',
             'add settings', 'edit settings', 'delete settings', 'show settings',
             'add inventory', 'edit inventory', 'delete inventory', 'show inventory',
         ];
@@ -68,7 +68,7 @@ class RolePermissionSeeder extends Seeder
             'edit order', 'delete order', 'show order',
             'edit payment', 'show payment',
             'view report',
-            'add coupon', 'edit coupon', 'delete coupon', 'show coupon',
+            'manage coupons',
             'add inventory', 'edit inventory', 'delete inventory', 'show inventory',
         ];
         /**
@@ -119,7 +119,7 @@ class RolePermissionSeeder extends Seeder
             'manage categories',
             'show payment',
             'view report',
-            'add coupon', 'edit coupon', 'delete coupon', 'show coupon',
+            'manage coupons',
         ];
         /**
          * View & Purchase Products: Browse, add to cart, and purchase products.

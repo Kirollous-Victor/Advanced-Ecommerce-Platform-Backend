@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Services\CouponService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class CouponController extends Controller
+class CouponController extends Controller implements HasMiddleware
 {
     protected CouponService $couponService;
 
@@ -18,6 +20,14 @@ class CouponController extends Controller
         $this->couponService = $couponService;
     }
 
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('auth:sanctum'),
+            new Middleware('verified'),
+            new Middleware('permission:manage coupons', except: ['show']),
+        ];
+    }
 
     public function index(): JsonResponse
     {
