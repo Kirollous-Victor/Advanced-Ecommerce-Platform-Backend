@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AuthService
 {
@@ -54,8 +56,9 @@ class AuthService
         try {
             $userData['password'] = Hash::make($userData['password']);
             $userData['role'] = 'user';
-            $user = $this->userRepository->store($userData);
             /** @var User $user */
+            $user = $this->userRepository->store($userData);
+            $user->assignRole(Role::findByName('customer'));
             $this->sendVerificationCode($user);
             DB::commit();
         } catch (\Exception $exception) {
