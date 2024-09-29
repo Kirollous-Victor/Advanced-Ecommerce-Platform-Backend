@@ -30,8 +30,7 @@ Route::group(['middleware' => ['limit_requests']], function () {
         Route::name('subcategories.')->prefix('categories.change')->group(function () {
             Route::patch('/{category}/move-subcategories', [CategoryController::class, 'moveSubcategories'])
                 ->name('parent');
-            Route::patch('/subcategories/remove-parent', [CategoryController::class,
-                'removeSubcategoriesParent'])
+            Route::patch('/subcategories/remove-parent', [CategoryController::class, 'removeSubcategoriesParent'])
                 ->name('parent.null');
         });
     });
