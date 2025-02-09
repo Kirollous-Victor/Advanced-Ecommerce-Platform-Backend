@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Services\ProductService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Validator;
 
-class ProductController extends Controller
+class ProductController extends Controller implements HasMiddleware
 {
     protected ProductService $productService;
 
@@ -17,6 +19,14 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('auth:sanctum', except: ['index', 'show']),
+            new Middleware('verified', except: ['index', 'show']),
+            new Middleware('permission:manage products', except: ['index', 'show']),
+        ];
+    }
 
     public function index(): JsonResponse
     {
